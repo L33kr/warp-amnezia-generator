@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="dark light" />
   <meta name="description" content="Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN на Deno Deploy." />
   <title>WARP → AmneziaVPN</title>
-  <link rel="stylesheet" href="/style.css?v=20260910-deno2" />
+  <link rel="stylesheet" href="/style.css?v=20260910-deno3" />
 </head>
 <body>
   <main class="shell">
@@ -28,6 +28,8 @@
         <label>DNS
           <select id="dnsPreset">
             <option value="1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001">Cloudflare</option>
+            <option value="83.220.169.155, 212.109.195.93">Comss.one</option>
+            <option value="111.88.96.50, 111.88.96.51">Xbox DNS</option>
             <option value="9.9.9.9, 149.112.112.112">Quad9</option>
             <option value="8.8.8.8, 8.8.4.4">Google</option>
           </select>
@@ -83,7 +85,7 @@
 
     <footer><span>Неофициальный open-source инструмент. Это обычный WireGuard-профиль WARP, а не AmneziaWG.</span></footer>
   </main>
-  <script src="/wireguard.js?v=20260910-deno2"></script>
-  <script src="/client.js?v=20260910-deno2"></script>
+  <script src="/wireguard.js?v=20260910-deno3"></script>
+  <script src="/client.js?v=20260910-deno3"></script>
 </body>
 </html>
