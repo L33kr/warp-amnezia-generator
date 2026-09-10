@@ -21,9 +21,7 @@ button, input, select, textarea { font: inherit; }
   padding: 56px 0;
 }
 
-.hero {
-  margin-bottom: 24px;
-}
+.hero { margin-bottom: 24px; }
 
 h1 {
   margin: 0 0 8px;
@@ -32,10 +30,7 @@ h1 {
   letter-spacing: -0.035em;
 }
 
-h2 {
-  margin: 0;
-  font-size: 18px;
-}
+h2 { margin: 0; font-size: 18px; }
 
 .hero p {
   margin: 0;
@@ -52,14 +47,8 @@ h2 {
   background: #111419;
 }
 
-.grid {
-  display: grid;
-  gap: 14px;
-}
-
-.grid.two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
+.grid { display: grid; gap: 14px; }
+.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 label {
   display: grid;
@@ -79,9 +68,7 @@ input, select, textarea {
   outline: none;
 }
 
-input:focus, select:focus, textarea:focus {
-  border-color: #64748b;
-}
+input:focus, select:focus, textarea:focus { border-color: #64748b; }
 
 textarea {
   resize: vertical;
@@ -103,9 +90,7 @@ summary {
   font-weight: 600;
 }
 
-.details-grid {
-  margin-top: 14px;
-}
+.details-grid { margin-top: 14px; }
 
 button {
   border: 1px solid #303641;
@@ -213,10 +198,7 @@ button:disabled { opacity: .55; cursor: wait; }
   margin-top: 12px;
 }
 
-.actions button {
-  flex: 1;
-}
-
+.actions button { flex: 1; }
 .hidden { display: none !important; }
 
 @media (max-width: 640px) {
