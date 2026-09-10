@@ -10,6 +10,8 @@ INCLUDE_IPV6="${WARP_INCLUDE_IPV6:-1}"
 DEVICE_TYPE="${WARP_DEVICE_TYPE:-Android}"
 LOCALE="${WARP_LOCALE:-en_US}"
 OUTPUT="${WARP_OUTPUT:-warp-amnezia.conf}"
+ENDPOINT_IP="${WARP_ENDPOINT_IP:-162.159.192.1}"
+ENDPOINT_PORT="${WARP_ENDPOINT_PORT:-2408}"
 
 for cmd in curl jq wg; do
   command -v "$cmd" >/dev/null 2>&1 || { echo "Missing dependency: $cmd" >&2; exit 1; }
@@ -28,7 +30,6 @@ PAYLOAD="$(jq -n \
 
 RESP="$(curl --fail-with-body -sS -X POST -H 'Content-Type: application/json' -d "$PAYLOAD" "$API")"
 PEER_KEY="$(jq -er '.config.peers[0].public_key' <<<"$RESP")"
-ENDPOINT="$(jq -er '.config.peers[0].endpoint.host' <<<"$RESP")"
 IPV4="$(jq -er '.config.interface.addresses.v4' <<<"$RESP")"
 IPV6="$(jq -r '.config.interface.addresses.v6 // empty' <<<"$RESP")"
 
@@ -46,9 +47,9 @@ IPV6="$(jq -r '.config.interface.addresses.v6 // empty' <<<"$RESP")"
   echo '[Peer]'
   echo "PublicKey = $PEER_KEY"
   echo "AllowedIPs = $ALLOWED"
-  echo "Endpoint = $ENDPOINT"
+  echo "Endpoint = $ENDPOINT_IP:$ENDPOINT_PORT"
   [[ "$KEEPALIVE" == "0" ]] || echo "PersistentKeepalive = $KEEPALIVE"
 } > "$OUTPUT"
 
 chmod 600 "$OUTPUT" || true
-printf 'Generated %s\n' "$OUTPUT"
+printf 'Generated %s using endpoint %s:%s\n' "$OUTPUT" "$ENDPOINT_IP" "$ENDPOINT_PORT"
