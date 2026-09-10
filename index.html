@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
-  <meta name="description" content="Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN." />
+  <meta name="description" content="Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN на Deno Deploy." />
   <title>WARP → AmneziaVPN</title>
-  <link rel="stylesheet" href="style.css?v=20260910-4" />
+  <link rel="stylesheet" href="/style.css?v=20260910-deno1" />
 </head>
 <body>
   <main class="shell">
     <section class="hero">
-      <div class="badge">GitHub Pages + Cloudflare Worker · бесплатно</div>
+      <div class="badge">Deno Deploy · бесплатно · один домен</div>
       <h1>WARP → AmneziaVPN</h1>
-      <p class="lead">Создаёт WireGuard-профиль Cloudflare WARP и скачивает <code>.conf</code> прямо на сайте — без перехода в GitHub Actions.</p>
-      <div class="notice"><strong>Приватный ключ остаётся в браузере.</strong> Worker получает только публичный WireGuard-ключ и регистрирует устройство в WARP.</div>
+      <p class="lead">Создаёт WireGuard-профиль Cloudflare WARP и скачивает <code>.conf</code> прямо на сайте.</p>
+      <div class="notice"><strong>Приватный WireGuard-ключ остаётся в браузере.</strong> Сервер Deno получает только публичный ключ, регистрирует устройство в WARP и возвращает публичные параметры подключения.</div>
     </section>
 
     <section class="card">
@@ -33,11 +33,6 @@
           </select>
         </label>
       </div>
-
-      <label style="margin-top:14px">Cloudflare Worker URL
-        <input id="workerUrl" placeholder="https://warp-amnezia-api.xxxxx.workers.dev" />
-      </label>
-      <div class="help">Этот адрес нужен только один раз и сохраняется локально в браузере. Код Worker уже лежит в репозитории: <code>worker/src/index.js</code>.</div>
 
       <details>
         <summary>Расширенные настройки</summary>
@@ -78,17 +73,17 @@
         <button id="copyBtn">Копировать</button>
         <button id="clearBtn" class="danger">Очистить ключ</button>
       </div>
-      <div class="help"><strong>Если Amnezia зависает на Connecting:</strong> сначала оставь Endpoint <code>162.159.192.1:2408</code>. Если UDP 2408 режется сетью, попробуй заново с портом 500, 1701 или 4500.</div>
+      <div class="help"><strong>Если Amnezia зависает на Connecting:</strong> попробуй другой UDP-порт в расширенных настройках и создай новый конфиг.</div>
     </section>
 
     <section class="card compact">
-      <h2>Worker ещё не создан?</h2>
-      <p>Открой Cloudflare → Workers & Pages → Create Worker → вставь код из <code>worker/src/index.js</code> → Deploy. Затем вставь адрес <code>*.workers.dev</code> выше. После этого генерация полностью происходит с этой страницы.</p>
+      <h2>Как это работает</h2>
+      <p>Страница и API работают в одном приложении Deno Deploy. Браузер создаёт WireGuard-ключи локально → <code>/api/register</code> регистрирует публичный ключ в WARP → браузер собирает и скачивает готовый конфиг. Никаких CORS proxy и GitHub Actions для обычной генерации.</p>
     </section>
 
     <footer><span>Неофициальный open-source инструмент. Это обычный WireGuard-профиль WARP, а не AmneziaWG.</span></footer>
   </main>
-  <script src="wireguard.js?v=20260910-4"></script>
-  <script src="app.js?v=20260910-4"></script>
+  <script src="/wireguard.js?v=20260910-deno1"></script>
+  <script src="/app.js?v=20260910-deno1"></script>
 </body>
 </html>
