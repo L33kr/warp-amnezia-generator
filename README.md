@@ -2,61 +2,78 @@
 
 Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для импорта в **AmneziaVPN**.
 
-## Архитектура
+Основной вариант развёртывания — **Deno Deploy**: сайт и backend работают на одном домене, поэтому не нужны CORS proxy, Cloudflare Worker или переходы в GitHub Actions.
 
-- **GitHub Pages** — интерфейс.
-- **Cloudflare Worker Free** — маленький backend только для регистрации WARP-профиля.
-- Приватный WireGuard-ключ генерируется **локально в браузере** и в Worker не отправляется.
-- Worker получает только публичный ключ, обращается к Cloudflare WARP API и возвращает IPv4/IPv6, peer public key и device id.
-- Готовый `warp-amnezia.conf` собирается и скачивается прямо в браузере.
+## Что происходит при генерации
 
-## Почему нужен Worker
+1. WireGuard private/public keypair создаётся локально в браузере.
+2. В `/api/register` отправляется только публичный ключ.
+3. Deno Deploy делает серверный POST в Cloudflare WARP API.
+4. В браузер возвращаются WARP IPv4/IPv6, peer public key и технические данные профиля.
+5. Браузер собирает `warp-amnezia.conf` и предлагает скачать его.
 
-GitHub Pages — статический хостинг, а WARP API не разрешает прямой browser POST из-за CORS. Публичные CORS proxy нестабильны, поэтому проект использует собственный бесплатный Cloudflare Worker.
+Приватный ключ не отправляется в Deno и не коммитится в GitHub.
 
-## Развернуть Worker
+## Бесплатный деплой на Deno Deploy
 
-Код уже готов в `worker/src/index.js`.
+Deno Deploy Free подходит для этого проекта с большим запасом: на бесплатном тарифе доступны до 1 млн HTTP-запросов в месяц и 20 GiB egress.
 
-### Через Cloudflare Dashboard
+1. Открой `https://console.deno.com` и войди через GitHub.
+2. Создай organization, если Deno попросит.
+3. Создай новое приложение и выбери **Deploy from GitHub**.
+4. Выбери репозиторий `L33kr/warp-amnezia-generator`.
+5. Runtime mode: **Dynamic**.
+6. Entrypoint: **`main.ts`**.
+7. Production branch: **`main`**.
+8. Region можно оставить **Global**.
+9. Нажми Deploy.
 
-1. Cloudflare → **Workers & Pages → Create → Worker**.
-2. Назови его `warp-amnezia-api`.
-3. Замени код Worker содержимым `worker/src/index.js`.
-4. Нажми **Deploy**.
-5. Скопируй URL вида `https://warp-amnezia-api.<subdomain>.workers.dev`.
-6. Вставь URL на сайте в поле **Cloudflare Worker URL**.
+После публикации Deno выдаст домен приложения. Открой его — генератор будет работать полностью на нём.
 
-CORS Worker разрешён только для `https://l33kr.github.io`.
+### CLI-вариант
 
-### Через Wrangler
+Если используешь Deno CLI, приложение можно создать через `deno deploy create` с GitHub source, dynamic runtime и entrypoint `main.ts`.
+
+## Локальный запуск
 
 ```bash
-npx wrangler deploy
+deno task dev
 ```
 
-`wrangler.toml` уже находится в корне репозитория.
+Открой `http://localhost:8000`.
 
-## Endpoint WARP
-
-По умолчанию проект использует прямой consumer WARP endpoint:
+Проверка backend:
 
 ```text
-162.159.192.1:2408
+GET /api/health
 ```
 
-Это сделано специально для обычного WireGuard/AmneziaVPN вместо `engage.cloudflareclient.com`. В интерфейсе также доступны резервные UDP-порты `500`, `1701` и `4500`.
+должна вернуть JSON с `ok: true`.
 
-## Резервный GitHub Actions генератор
+## Endpoint
 
-`Actions → Generate WARP config → Run workflow` по-прежнему оставлен как fallback. Он тоже использует прямой endpoint и позволяет выбрать порт.
+Генератор по умолчанию использует прямой WARP endpoint `162.159.192.1:2408`. В интерфейсе можно выбрать резервные UDP-порты `500`, `1701` и `4500`, если сеть блокирует основной порт.
+
+## GitHub Actions
+
+Workflow `Generate WARP config` оставлен как резервный вариант. Для обычной работы после Deno Deploy он не нужен.
 
 ## Безопасность
 
-Не публикуй сгенерированный `.conf`: он содержит приватный ключ. Репозиторий и Worker приватный ключ не сохраняют.
+Не публикуй сгенерированный `.conf`: в нём находится приватный WireGuard-ключ.
 
-> Это обычный WireGuard-профиль Cloudflare WARP. Это не AmneziaWG и не добавляет AWG-обфускацию.
+## Структура
+
+- `main.ts` — Deno HTTP server + `/api/register`.
+- `index.html` — интерфейс.
+- `app.js` — локальная генерация ключей, вызов API и сборка `.conf`.
+- `wireguard.js` — X25519/WireGuard key generation.
+- `deno.json` — локальные Deno tasks.
+- `.github/workflows/generate.yml` — резервный Actions-генератор.
+- `worker/` — старый альтернативный вариант через Cloudflare Worker; для Deno Deploy не требуется.
 
 ## Лицензия
 
-GPL-2.0-only. `wireguard.js` основан на GPL-2.0 коде WireGuard для X25519/WireGuard keypair generation.
+GPL-2.0-only.
+
+Cloudflare/WARP, WireGuard, Deno и Amnezia — торговые марки соответствующих владельцев. Проект не аффилирован с ними.
