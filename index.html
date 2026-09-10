@@ -4,109 +4,46 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark light" />
-  <meta name="referrer" content="no-referrer" />
-  <meta name="description" content="Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для импорта в AmneziaVPN." />
-  <title>WARP → AmneziaVPN Config Generator</title>
-  <link rel="stylesheet" href="style.css?v=20260910-2" />
+  <meta name="description" content="Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN через GitHub Actions." />
+  <title>WARP → AmneziaVPN</title>
+  <link rel="stylesheet" href="style.css?v=20260910-3" />
 </head>
 <body>
   <main class="shell">
     <section class="hero">
-      <div class="badge">GitHub Pages · бесплатно · без backend</div>
+      <div class="badge">GitHub Pages + GitHub Actions · бесплатно</div>
       <h1>WARP → AmneziaVPN</h1>
-      <p class="lead">Создаёт обычный WireGuard-профиль Cloudflare WARP, который можно импортировать в AmneziaVPN.</p>
+      <p class="lead">Генерирует обычный WireGuard-профиль Cloudflare WARP для импорта в AmneziaVPN.</p>
       <div class="notice">
-        <strong>Важно:</strong> это WireGuard-конфиг для AmneziaVPN, а не AmneziaWG. Приватный ключ создаётся локально в браузере и никуда не отправляется.
+        <strong>Почему через Actions:</strong> Cloudflare WARP API не разрешает прямую регистрацию из GitHub Pages из-за CORS, а публичные CORS-прокси нестабильны. Поэтому генерация выполняется на бесплатном GitHub runner без стороннего proxy.
       </div>
     </section>
 
     <section class="card">
-      <div class="grid two">
-        <label>
-          Режим маршрутизации
-          <select id="routeMode">
-            <option value="full">Весь трафик (IPv4 + IPv6)</option>
-            <option value="ipv4">Только IPv4</option>
-          </select>
-        </label>
-        <label>
-          DNS
-          <select id="dnsPreset">
-            <option value="1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001">Cloudflare</option>
-            <option value="9.9.9.9, 149.112.112.112">Quad9</option>
-            <option value="8.8.8.8, 8.8.4.4">Google</option>
-          </select>
-        </label>
-      </div>
-
-      <details>
-        <summary>Расширенные настройки</summary>
-        <div class="grid two details-grid">
-          <label>MTU <input id="mtu" type="number" min="576" max="1500" value="1280" /></label>
-          <label>PersistentKeepalive <input id="keepalive" type="number" min="0" max="3600" value="25" /></label>
-          <label>Тип устройства <input id="deviceType" value="Android" /></label>
-          <label>Locale <input id="locale" value="en_US" /></label>
-          <label class="span-2">Переопределить Endpoint <input id="endpointOverride" placeholder="оставь пустым, чтобы взять из Cloudflare" /></label>
-          <label class="span-2">CORS proxy
-            <select id="proxyMode">
-              <option value="auto" selected>Автоматически (рекомендуется)</option>
-              <option value="corsbridge">CorsBridge</option>
-              <option value="thingproxy">ThingProxy</option>
-              <option value="corsproxyio">corsproxy.io</option>
-              <option value="custom">Свой прокси</option>
-            </select>
-          </label>
-          <label id="customProxyWrap" class="span-2 hidden">URL своего прокси <input id="customProxy" placeholder="https://example.com/?url=" /></label>
-        </div>
-      </details>
-
-      <button id="generateBtn" class="primary">Создать WARP config</button>
-      <div id="status" class="status hidden" role="status"></div>
-      <div id="error" class="error hidden" role="alert"></div>
-    </section>
-
-    <section id="result" class="card hidden">
-      <div class="result-head">
-        <div>
-          <div class="eyebrow">Готово</div>
-          <h2>warp-amnezia.conf</h2>
-        </div>
-        <div class="pill" id="accountType">WARP</div>
-      </div>
-
-      <div class="meta-grid">
-        <div><span>IPv4</span><strong id="ipv4">—</strong></div>
-        <div><span>IPv6</span><strong id="ipv6">—</strong></div>
-        <div><span>Endpoint</span><strong id="endpoint">—</strong></div>
-        <div><span>Device ID</span><strong id="deviceId">—</strong></div>
-      </div>
-
-      <label>Конфигурация
-        <textarea id="config" rows="14" spellcheck="false" readonly></textarea>
-      </label>
-
+      <div class="eyebrow">Надёжный режим</div>
+      <h2>Создать WARP config</h2>
+      <p class="lead">Нажми кнопку ниже. На странице GitHub нажми <strong>Run workflow</strong>, выбери параметры и запусти генерацию.</p>
       <div class="actions">
-        <button id="downloadBtn" class="primary">Скачать .conf</button>
-        <button id="copyBtn">Копировать</button>
-        <button id="clearBtn" class="danger">Очистить ключ</button>
+        <a href="https://github.com/L33kr/warp-amnezia-generator/actions/workflows/generate.yml" target="_blank" rel="noopener"><button class="primary">Открыть генератор в GitHub Actions</button></a>
       </div>
-
       <div class="help">
-        <strong>Импорт в AmneziaVPN:</strong> + → Подключиться через файл/конфигурацию → выбрать <code>warp-amnezia.conf</code> → WireGuard.
+        <strong>После запуска:</strong> дождись зелёной галочки → открой выполненный запуск → внизу страницы скачай artifact <code>warp-amnezia-config</code> → распакуй <code>warp-amnezia.conf</code> → импортируй его в AmneziaVPN как WireGuard.
       </div>
     </section>
 
     <section class="card compact">
-      <h2>Если браузерный режим не сработал</h2>
-      <p>Открой вкладку <strong>Actions</strong> репозитория → <strong>Generate WARP config</strong> → <strong>Run workflow</strong>. GitHub сам создаст конфиг и положит его в artifact.</p>
+      <h2>Что можно выбрать</h2>
+      <p><strong>Routing mode:</strong> IPv4 + IPv6 или только IPv4. <strong>DNS:</strong> Cloudflare, Quad9 или Google. Также можно изменить MTU и PersistentKeepalive.</p>
+    </section>
+
+    <section class="card compact">
+      <h2>Безопасность</h2>
+      <p>Приватный WireGuard-ключ создаётся только внутри временного GitHub runner. Он попадает в artifact на 1 день и не коммитится в репозиторий. Не публикуй скачанный <code>.conf</code>.</p>
     </section>
 
     <footer>
-      <span>Неофициальный open-source инструмент. Cloudflare/WARP, WireGuard и Amnezia — торговые марки их владельцев.</span>
+      <span>Это WireGuard-конфиг для использования в AmneziaVPN, а не AmneziaWG. Проект не аффилирован с Cloudflare, WireGuard или Amnezia.</span>
     </footer>
   </main>
-
-  <script src="wireguard.js?v=20260910-2"></script>
-  <script src="app.js?v=20260910-2"></script>
 </body>
 </html>

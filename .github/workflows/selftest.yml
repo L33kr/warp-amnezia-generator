@@ -1,0 +1,28 @@
+name: WARP generator self-test
+
+on:
+  push:
+    paths:
+      - '.github/workflows/selftest.yml'
+      - 'scripts/generate.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y wireguard-tools jq
+      - name: Verify WARP registration and config generation
+        run: |
+          ./scripts/generate.sh
+          grep -q '^\[Interface\]$' warp-amnezia.conf
+          grep -q '^PrivateKey = ' warp-amnezia.conf
+          grep -q '^\[Peer\]$' warp-amnezia.conf
+          grep -q '^PublicKey = ' warp-amnezia.conf
+          grep -q '^Endpoint = ' warp-amnezia.conf
+          echo 'WARP registration and config generation succeeded.'
+          shred -u warp-amnezia.conf || rm -f warp-amnezia.conf
