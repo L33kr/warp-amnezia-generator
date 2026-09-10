@@ -1,58 +1,42 @@
 # WARP → AmneziaVPN Config Generator
 
-Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для импорта в **AmneziaVPN**.
+Генератор Cloudflare WARP WireGuard-конфигураций для импорта в **AmneziaVPN**.
 
-Основной вариант развёртывания — **Deno Deploy**: сайт и backend работают на одном домене, поэтому не нужны CORS proxy, Cloudflare Worker или переходы в GitHub Actions.
+## Как пользоваться
 
-## Что происходит при генерации
+1. Открой сайт: **https://warp-amnezia-generator.l33kr.deno.net/**
+2. Выбери режим маршрутизации:
+   - **Весь трафик (IPv4 + IPv6)** — обычный вариант.
+   - **Только IPv4** — если IPv6 не нужен или работает нестабильно.
+3. Выбери DNS:
+   - Cloudflare
+   - Comss.one
+   - Xbox DNS
+   - Quad9
+   - Google
+4. При необходимости открой **Расширенные настройки** и измени WARP Endpoint, UDP-порт, MTU или PersistentKeepalive.
+5. Нажми **Создать WARP config**.
+6. После успешной генерации нажми **Скачать .conf**.
+7. Открой AmneziaVPN и импортируй скачанный `warp-amnezia.conf` как обычную конфигурацию **WireGuard**.
 
-1. WireGuard private/public keypair создаётся локально в браузере.
-2. В `/api/register` отправляется только публичный ключ.
-3. Deno Deploy делает серверный POST в Cloudflare WARP API.
-4. В браузер возвращаются WARP IPv4/IPv6, peer public key и технические данные профиля.
-5. Браузер собирает `warp-amnezia.conf` и предлагает скачать его.
+## Если AmneziaVPN зависает на Connecting
 
-Приватный ключ не отправляется в Deno и не коммитится в GitHub.
-
-## Deno Deploy
-
-Deno Deploy должен запускать серверный entrypoint `app.js` или `main.ts`.
-
-- `app.js` — серверный bootstrap, импортирует `main.ts`.
-- `main.ts` — HTTP server + `/api/register`.
-- `client.js` — браузерный код интерфейса.
-- `index.html` — интерфейс.
-
-Такое разделение важно: браузерный код использует `document`, которого нет в серверном runtime Deno.
-
-## Локальный запуск
-
-```bash
-deno task dev
-```
-
-Проверка backend:
+По умолчанию используется endpoint:
 
 ```text
-GET /api/health
+162.159.192.1:2408
 ```
 
-должна вернуть JSON с `ok: true`.
+Если подключения нет, создай новый конфиг, выбрав другой UDP-порт в расширенных настройках:
 
-## Endpoint
+```text
+500
+1701
+4500
+```
 
-Генератор по умолчанию использует прямой WARP endpoint `162.159.192.1:2408`. В интерфейсе можно выбрать резервные UDP-порты `500`, `1701` и `4500`, если сеть блокирует основной порт.
+## Важно
 
-## GitHub Actions
+Сгенерированный `.conf` содержит приватный WireGuard-ключ. Не публикуй его и не отправляй посторонним.
 
-Workflow `Generate WARP config` оставлен как резервный вариант. Для обычной работы после Deno Deploy он не нужен.
-
-## Безопасность
-
-Не публикуй сгенерированный `.conf`: в нём находится приватный WireGuard-ключ.
-
-## Лицензия
-
-GPL-2.0-only.
-
-Cloudflare/WARP, WireGuard, Deno и Amnezia — торговые марки соответствующих владельцев. Проект не аффилирован с ними.
+Это обычный WireGuard-профиль Cloudflare WARP для импорта в AmneziaVPN, а не AmneziaWG.
