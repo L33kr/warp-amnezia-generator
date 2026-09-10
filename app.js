@@ -33,12 +33,28 @@
     error.classList.add('hidden');
   }
 
-  function proxiedUrl(target) {
-    if (proxyMode.value === 'corsfix') return `https://proxy.corsfix.com/?${target}`;
-    if (proxyMode.value === 'corsproxyio') return `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+  function proxyCandidates(target) {
+    const corsBridge = `https://api.cors.syrins.tech/?url=${encodeURIComponent(target)}`;
+    const thingProxy = `https://thingproxy.freeboard.io/fetch/${target}`;
+    const corsProxyIo = `https://corsproxy.io/?url=${encodeURIComponent(target)}`;
+
+    if (proxyMode.value === 'auto') {
+      return [
+        { name: 'CorsBridge', url: corsBridge },
+        { name: 'ThingProxy', url: thingProxy },
+        { name: 'corsproxy.io', url: corsProxyIo }
+      ];
+    }
+    if (proxyMode.value === 'corsbridge') return [{ name: 'CorsBridge', url: corsBridge }];
+    if (proxyMode.value === 'thingproxy') return [{ name: 'ThingProxy', url: thingProxy }];
+    if (proxyMode.value === 'corsproxyio') return [{ name: 'corsproxy.io', url: corsProxyIo }];
+
     const custom = $('customProxy').value.trim();
     if (!custom) throw new Error('Укажи URL своего CORS proxy.');
-    return custom.includes('{url}') ? custom.replace('{url}', encodeURIComponent(target)) : custom + encodeURIComponent(target);
+    const url = custom.includes('{url}')
+      ? custom.replace('{url}', encodeURIComponent(target))
+      : custom + encodeURIComponent(target);
+    return [{ name: 'Custom proxy', url }];
   }
 
   function options() {
@@ -55,6 +71,27 @@
     };
   }
 
+  async function parseResponse(response) {
+    const text = await response.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`не-JSON ответ (HTTP ${response.status})`);
+    }
+
+    // Некоторые прокси могут завернуть upstream-body в поле contents/body/data.
+    for (const key of ['contents', 'body', 'data']) {
+      if (typeof data?.[key] === 'string') {
+        try {
+          const nested = JSON.parse(data[key]);
+          if (nested && typeof nested === 'object') data = nested;
+        } catch { /* оставляем исходный объект */ }
+      }
+    }
+    return data;
+  }
+
   async function register(publicKey, opts) {
     const payload = {
       key: publicKey,
@@ -65,22 +102,48 @@
       locale: opts.locale
     };
 
-    const url = proxiedUrl(WARP_API);
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    const attempts = [];
+    const candidates = proxyCandidates(WARP_API);
 
-    let data;
-    try { data = await response.json(); }
-    catch { throw new Error(`WARP API вернул не-JSON ответ (HTTP ${response.status}). Попробуй резервный CORS proxy или GitHub Actions.`); }
+    for (let i = 0; i < candidates.length; i++) {
+      const candidate = candidates[i];
+      if (candidates.length > 1) {
+        setStatus(`2/3 Регистрирую WARP-профиль через ${candidate.name} (${i + 1}/${candidates.length})…`);
+      }
 
-    if (!response.ok || data.success === false || !data?.config?.peers?.[0]) {
-      const reason = data?.errors?.[0]?.message || data?.error?.message || data?.message || `HTTP ${response.status}`;
-      throw new Error(`Не удалось зарегистрировать WARP-профиль: ${reason}`);
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 15000);
+        let response;
+        try {
+          response = await fetch(candidate.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload),
+            cache: 'no-store',
+            signal: controller.signal
+          });
+        } finally {
+          clearTimeout(timer);
+        }
+
+        const data = await parseResponse(response);
+        if (response.ok && data?.config?.peers?.[0] && data?.config?.interface?.addresses?.v4) {
+          return data;
+        }
+
+        const reason = data?.errors?.[0]?.message || data?.error?.message || data?.message || `HTTP ${response.status}`;
+        attempts.push(`${candidate.name}: ${reason}`);
+      } catch (e) {
+        const reason = e?.name === 'AbortError' ? 'тайм-аут' : (e?.message || 'ошибка сети/CORS');
+        attempts.push(`${candidate.name}: ${reason}`);
+      }
     }
-    return data;
+
+    throw new Error(`Не удалось зарегистрировать WARP-профиль. ${attempts.join(' | ')}`);
   }
 
   function buildConfig(privateKey, warp, opts) {
@@ -137,7 +200,7 @@
 
       $('config').value = built.text;
       $('ipv4').textContent = warp.config.interface.addresses.v4 || '—';
-      $('ipv6').textContent = warp.config.interface.addresses.v6 || '—';
+      $('ipv6').textContent = opts.includeIpv6 ? (warp.config.interface.addresses.v6 || '—') : 'отключён';
       $('endpoint').textContent = built.endpoint;
       $('deviceId').textContent = warp.id || '—';
       $('accountType').textContent = warp.account?.warp_plus ? 'WARP+' : 'WARP Free';
@@ -145,7 +208,7 @@
       status.classList.add('hidden');
     } catch (e) {
       wipeState();
-      setError(`${e.message}\n\nЕсли оба CORS proxy не работают, используй резервный workflow во вкладке Actions.`);
+      setError(`${e.message}\n\nПопробуй ещё раз. Если публичные CORS proxy недоступны, используй резервный workflow во вкладке Actions.`);
     } finally {
       generateBtn.disabled = false;
       generateBtn.textContent = 'Создать WARP config';
