@@ -49,8 +49,10 @@
           <label class="span-2">Переопределить Endpoint <input id="endpointOverride" placeholder="оставь пустым, чтобы взять из Cloudflare" /></label>
           <label class="span-2">CORS proxy
             <select id="proxyMode">
-              <option value="corsfix">Corsfix (основной)</option>
-              <option value="corsproxyio">corsproxy.io (резервный)</option>
+              <option value="auto" selected>Автоматически (рекомендуется)</option>
+              <option value="corsbridge">CorsBridge</option>
+              <option value="thingproxy">ThingProxy</option>
+              <option value="corsproxyio">corsproxy.io</option>
               <option value="custom">Свой прокси</option>
             </select>
           </label>
