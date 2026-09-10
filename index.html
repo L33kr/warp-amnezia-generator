@@ -3,28 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark light" />
-  <meta name="description" content="Бесплатный генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN на Deno Deploy." />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN." />
   <title>WARP → AmneziaVPN</title>
-  <link rel="stylesheet" href="/style.css?v=20260910-deno3" />
+  <link rel="stylesheet" href="/style.css?v=20260910-minimal1" />
 </head>
 <body>
   <main class="shell">
-    <section class="hero">
-      <div class="badge">Deno Deploy · бесплатно · один домен</div>
+    <header class="hero">
       <h1>WARP → AmneziaVPN</h1>
-      <p class="lead">Создаёт WireGuard-профиль Cloudflare WARP и скачивает <code>.conf</code> прямо на сайте.</p>
-      <div class="notice"><strong>Приватный WireGuard-ключ остаётся в браузере.</strong> Сервер Deno получает только публичный ключ, регистрирует устройство в WARP и возвращает публичные параметры подключения.</div>
-    </section>
+      <p>Генератор WireGuard-профиля Cloudflare WARP для AmneziaVPN.</p>
+    </header>
 
     <section class="card">
       <div class="grid two">
         <label>Режим маршрутизации
           <select id="routeMode">
-            <option value="full">Весь трафик (IPv4 + IPv6)</option>
+            <option value="full">IPv4 + IPv6</option>
             <option value="ipv4">Только IPv4</option>
           </select>
         </label>
+
         <label>DNS
           <select id="dnsPreset">
             <option value="1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001">Cloudflare</option>
@@ -37,55 +36,60 @@
       </div>
 
       <details>
-        <summary>Расширенные настройки</summary>
+        <summary>Дополнительные настройки</summary>
         <div class="grid two details-grid">
-          <label>WARP Endpoint IP <input id="endpointIp" value="162.159.192.1" /></label>
-          <label>WARP UDP порт
+          <label>Endpoint IP
+            <input id="endpointIp" value="162.159.192.1" />
+          </label>
+
+          <label>UDP порт
             <select id="warpPort">
-              <option value="2408" selected>2408 — основной</option>
-              <option value="500">500 — резервный</option>
-              <option value="1701">1701 — резервный</option>
-              <option value="4500">4500 — резервный</option>
+              <option value="2408" selected>2408</option>
+              <option value="500">500</option>
+              <option value="1701">1701</option>
+              <option value="4500">4500</option>
             </select>
           </label>
-          <label>MTU <input id="mtu" type="number" min="576" max="1500" value="1280" /></label>
-          <label>PersistentKeepalive <input id="keepalive" type="number" min="0" max="3600" value="25" /></label>
+
+          <label>MTU
+            <input id="mtu" type="number" min="576" max="1500" value="1280" />
+          </label>
+
+          <label>Keepalive
+            <input id="keepalive" type="number" min="0" max="3600" value="25" />
+          </label>
         </div>
       </details>
 
-      <button id="generateBtn" class="primary">Создать WARP config</button>
+      <button id="generateBtn" class="primary">Создать конфиг</button>
       <div id="status" class="status hidden" role="status"></div>
       <div id="error" class="error hidden" role="alert"></div>
     </section>
 
     <section id="result" class="card hidden">
       <div class="result-head">
-        <div><div class="eyebrow">Готово</div><h2>warp-amnezia.conf</h2></div>
+        <h2>warp-amnezia.conf</h2>
         <div class="pill" id="accountType">WARP</div>
       </div>
+
       <div class="meta-grid">
         <div><span>IPv4</span><strong id="ipv4">—</strong></div>
         <div><span>IPv6</span><strong id="ipv6">—</strong></div>
         <div><span>Endpoint</span><strong id="endpoint">—</strong></div>
         <div><span>Device ID</span><strong id="deviceId">—</strong></div>
       </div>
-      <label>Конфигурация<textarea id="config" rows="14" spellcheck="false" readonly></textarea></label>
+
+      <textarea id="config" rows="13" spellcheck="false" readonly></textarea>
+
       <div class="actions">
         <button id="downloadBtn" class="primary">Скачать .conf</button>
         <button id="copyBtn">Копировать</button>
-        <button id="clearBtn" class="danger">Очистить ключ</button>
+        <button id="clearBtn" class="danger">Очистить</button>
       </div>
-      <div class="help"><strong>Если Amnezia зависает на Connecting:</strong> попробуй другой UDP-порт в расширенных настройках и создай новый конфиг.</div>
     </section>
-
-    <section class="card compact">
-      <h2>Как это работает</h2>
-      <p>Страница и API работают в одном приложении Deno Deploy. Браузер создаёт WireGuard-ключи локально → <code>/api/register</code> регистрирует публичный ключ в WARP → браузер собирает и скачивает готовый конфиг. Никаких CORS proxy и GitHub Actions для обычной генерации.</p>
-    </section>
-
-    <footer><span>Неофициальный open-source инструмент. Это обычный WireGuard-профиль WARP, а не AmneziaWG.</span></footer>
   </main>
-  <script src="/wireguard.js?v=20260910-deno3"></script>
-  <script src="/client.js?v=20260910-deno3"></script>
+
+  <script src="/wireguard.js?v=20260910-minimal1"></script>
+  <script src="/client.js?v=20260910-minimal1"></script>
 </body>
 </html>
