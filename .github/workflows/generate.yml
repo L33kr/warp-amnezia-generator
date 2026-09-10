@@ -1,0 +1,50 @@
+name: Generate WARP config
+
+on:
+  workflow_dispatch:
+    inputs:
+      route_mode:
+        description: Routing mode
+        type: choice
+        required: true
+        default: full
+        options:
+          - full
+          - ipv4
+      mtu:
+        description: MTU
+        required: true
+        default: '1280'
+      keepalive:
+        description: PersistentKeepalive (0 disables)
+        required: true
+        default: '25'
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install WireGuard tools
+        run: sudo apt-get update && sudo apt-get install -y wireguard-tools jq
+      - name: Generate WARP config
+        env:
+          WARP_MTU: ${{ inputs.mtu }}
+          WARP_KEEPALIVE: ${{ inputs.keepalive }}
+        run: |
+          if [ "${{ inputs.route_mode }}" = "ipv4" ]; then
+            export WARP_ALLOWED_IPS='0.0.0.0/0'
+            export WARP_DNS='1.1.1.1, 1.0.0.1'
+            export WARP_INCLUDE_IPV6='0'
+          fi
+          ./scripts/generate.sh
+      - name: Upload config
+        uses: actions/upload-artifact@v4
+        with:
+          name: warp-amnezia-config
+          path: warp-amnezia.conf
+          if-no-files-found: error
+          retention-days: 1
