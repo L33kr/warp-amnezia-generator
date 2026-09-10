@@ -2,84 +2,74 @@
   'use strict';
 
   const $ = (id) => document.getElementById(id);
-  const WORKER_KEY = 'warpAmneziaWorkerUrl';
-  const DEFAULT_ENDPOINT = '162.159.192.1';
   const state = { privateKey: null, config: null };
 
-  const workerUrl = $('workerUrl');
-  const savedWorker = localStorage.getItem(WORKER_KEY);
-  if (savedWorker) workerUrl.value = savedWorker;
-
-  const normalizeWorkerUrl = (value) => value.trim().replace(/\/+$/, '');
+  const generateBtn = $('generateBtn');
+  const result = $('result');
+  const status = $('status');
+  const error = $('error');
 
   function setStatus(message) {
-    $('status').textContent = message;
-    $('status').classList.remove('hidden');
-    $('error').classList.add('hidden');
+    status.textContent = message;
+    status.classList.remove('hidden');
+    error.classList.add('hidden');
   }
 
   function setError(message) {
-    $('error').textContent = message;
-    $('error').classList.remove('hidden');
-    $('status').classList.add('hidden');
+    error.textContent = message;
+    error.classList.remove('hidden');
+    status.classList.add('hidden');
   }
 
   function clearMessages() {
-    $('status').classList.add('hidden');
-    $('error').classList.add('hidden');
+    status.classList.add('hidden');
+    error.classList.add('hidden');
   }
 
   function options() {
-    const full = $('routeMode').value === 'full';
+    const routeMode = $('routeMode').value;
     return {
       dns: $('dnsPreset').value,
       mtu: Number($('mtu').value || 1280),
-      keepalive: Number($('keepalive').value || 25),
-      port: Number($('warpPort').value || 2408),
-      endpoint: $('endpointIp').value.trim() || DEFAULT_ENDPOINT,
-      allowedIps: full ? '0.0.0.0/0, ::/0' : '0.0.0.0/0',
-      includeIpv6: full
+      keepalive: Number($('keepalive').value || 0),
+      endpointIp: $('endpointIp').value.trim() || '162.159.192.1',
+      port: $('warpPort').value,
+      allowedIps: routeMode === 'ipv4' ? '0.0.0.0/0' : '0.0.0.0/0, ::/0',
+      includeIpv6: routeMode !== 'ipv4'
     };
   }
 
   async function register(publicKey) {
-    const base = normalizeWorkerUrl(workerUrl.value);
-    if (!/^https:\/\//i.test(base)) {
-      throw new Error('Укажи HTTPS-адрес своего Cloudflare Worker. Он нужен один раз; сайт запомнит его в этом браузере.');
-    }
-    localStorage.setItem(WORKER_KEY, base);
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
-    let response;
-    try {
-      response = await fetch(`${base}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ key: publicKey, type: 'Android', locale: 'en_US' }),
-        cache: 'no-store',
-        signal: controller.signal
-      });
-    } catch (e) {
-      if (e?.name === 'AbortError') throw new Error('Cloudflare Worker не ответил за 20 секунд.');
-      throw new Error(`Не удалось обратиться к Worker: ${e?.message || 'ошибка сети'}`);
-    } finally {
-      clearTimeout(timer);
-    }
+    const response = await fetch('/api/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        key: publicKey,
+        type: 'Android',
+        locale: 'en_US'
+      }),
+      cache: 'no-store'
+    });
 
     let data;
-    try { data = await response.json(); }
-    catch { throw new Error(`Worker вернул не-JSON ответ (HTTP ${response.status}).`); }
-
-    if (!response.ok || !data?.peerPublicKey || !data?.ipv4) {
-      throw new Error(data?.error || `Ошибка регистрации WARP (HTTP ${response.status}).`);
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(`Сервер вернул некорректный ответ (HTTP ${response.status}).`);
     }
+
+    if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`);
+    if (!data?.ipv4 || !data?.peerPublicKey) throw new Error('Deno backend вернул неполную WARP-конфигурацию.');
     return data;
   }
 
   function buildConfig(privateKey, warp, opts) {
     const addresses = [`${warp.ipv4}/32`];
     if (opts.includeIpv6 && warp.ipv6) addresses.push(`${warp.ipv6}/128`);
+    const endpoint = `${opts.endpointIp}:${opts.port}`;
 
     const lines = [
       '[Interface]',
@@ -91,58 +81,76 @@
       '[Peer]',
       `PublicKey = ${warp.peerPublicKey}`,
       `AllowedIPs = ${opts.allowedIps}`,
-      `Endpoint = ${opts.endpoint}:${opts.port}`
+      `Endpoint = ${endpoint}`
     ];
+
     if (opts.keepalive > 0) lines.push(`PersistentKeepalive = ${opts.keepalive}`);
-    return lines.join('\n') + '\n';
+    return { text: lines.join('\n') + '\n', endpoint };
   }
 
   function wipeState() {
     state.privateKey = null;
     state.config = null;
     $('config').value = '';
-    $('result').classList.add('hidden');
+    result.classList.add('hidden');
   }
 
-  $('generateBtn').addEventListener('click', async () => {
+  generateBtn.addEventListener('click', async () => {
     clearMessages();
-    wipeState();
-    const button = $('generateBtn');
-    button.disabled = true;
-    button.textContent = 'Создаю…';
+    result.classList.add('hidden');
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Создаю…';
 
     try {
+      if (location.hostname.endsWith('.github.io')) {
+        throw new Error('Эта версия должна быть открыта через Deno Deploy: GitHub Pages не умеет выполнять /api/register.');
+      }
+
       setStatus('1/3 Генерирую WireGuard-ключи локально…');
       const keys = window.wireguard.generateKeypair();
       state.privateKey = keys.privateKey;
 
-      setStatus('2/3 Регистрирую WARP-профиль через твой Cloudflare Worker…');
+      setStatus('2/3 Регистрирую WARP-профиль через Deno Deploy…');
       const warp = await register(keys.publicKey);
 
-      setStatus('3/3 Собираю конфигурацию для AmneziaVPN…');
+      setStatus('3/3 Собираю конфигурацию…');
       const opts = options();
-      state.config = buildConfig(keys.privateKey, warp, opts);
+      const built = buildConfig(keys.privateKey, warp, opts);
+      state.config = built.text;
 
-      $('config').value = state.config;
+      $('config').value = built.text;
       $('ipv4').textContent = warp.ipv4 || '—';
       $('ipv6').textContent = opts.includeIpv6 ? (warp.ipv6 || '—') : 'отключён';
-      $('endpoint').textContent = `${opts.endpoint}:${opts.port}`;
+      $('endpoint').textContent = built.endpoint;
       $('deviceId').textContent = warp.deviceId || '—';
       $('accountType').textContent = warp.warpPlus ? 'WARP+' : 'WARP Free';
-      $('result').classList.remove('hidden');
-      $('status').classList.add('hidden');
+      result.classList.remove('hidden');
+      status.classList.add('hidden');
     } catch (e) {
       wipeState();
-      setError(e?.message || String(e));
+      setError(e?.message || 'Не удалось создать WARP config.');
     } finally {
-      button.disabled = false;
-      button.textContent = 'Создать WARP config';
+      generateBtn.disabled = false;
+      generateBtn.textContent = 'Создать WARP config';
+    }
+  });
+
+  $('copyBtn').addEventListener('click', async () => {
+    if (!state.config) return;
+    try {
+      await navigator.clipboard.writeText(state.config);
+      const old = $('copyBtn').textContent;
+      $('copyBtn').textContent = 'Скопировано';
+      setTimeout(() => $('copyBtn').textContent = old, 1600);
+    } catch {
+      setError('Браузер не разрешил доступ к буферу обмена.');
     }
   });
 
   $('downloadBtn').addEventListener('click', () => {
     if (!state.config) return;
-    const url = URL.createObjectURL(new Blob([state.config], { type: 'text/plain;charset=utf-8' }));
+    const blob = new Blob([state.config], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'warp-amnezia.conf';
@@ -152,20 +160,10 @@
     URL.revokeObjectURL(url);
   });
 
-  $('copyBtn').addEventListener('click', async () => {
-    if (!state.config) return;
-    try {
-      await navigator.clipboard.writeText(state.config);
-      const old = $('copyBtn').textContent;
-      $('copyBtn').textContent = 'Скопировано';
-      setTimeout(() => $('copyBtn').textContent = old, 1500);
-    } catch {
-      setError('Браузер не разрешил доступ к буферу обмена.');
-    }
-  });
-
   $('clearBtn').addEventListener('click', () => {
     wipeState();
     clearMessages();
   });
+
+  window.addEventListener('beforeunload', wipeState);
 })();
