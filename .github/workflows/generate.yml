@@ -18,6 +18,8 @@ on:
         default: cloudflare
         options:
           - cloudflare
+          - comss
+          - xbox
           - quad9
           - google
       endpoint_ip:
@@ -61,6 +63,8 @@ jobs:
           WARP_ENDPOINT_PORT: ${{ inputs.endpoint_port }}
         run: |
           case "${{ inputs.dns }}" in
+            comss) export WARP_DNS='83.220.169.155, 212.109.195.93' ;;
+            xbox) export WARP_DNS='111.88.96.50, 111.88.96.51' ;;
             quad9) export WARP_DNS='9.9.9.9, 149.112.112.112' ;;
             google) export WARP_DNS='8.8.8.8, 8.8.4.4' ;;
             *) export WARP_DNS='1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001' ;;
