@@ -3,5 +3,12 @@
     "dev": "deno run --allow-net --allow-read --watch main.ts",
     "start": "deno run --allow-net --allow-read main.ts",
     "check": "deno check main.ts"
+  },
+  "deploy": {
+    "runtime": {
+      "type": "dynamic",
+      "entrypoint": "./main.ts",
+      "cwd": "."
+    }
   }
 }
