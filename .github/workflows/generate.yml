@@ -58,7 +58,7 @@ jobs:
             fi
           fi
 
-          ./scripts/generate.sh
+          bash scripts/generate.sh
 
       - name: Upload config
         uses: actions/upload-artifact@v4

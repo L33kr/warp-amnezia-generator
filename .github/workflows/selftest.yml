@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/selftest.yml'
+      - '.github/workflows/generate.yml'
       - 'scripts/generate.sh'
 
 permissions:
@@ -18,7 +19,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y wireguard-tools jq
       - name: Verify WARP registration and config generation
         run: |
-          ./scripts/generate.sh
+          bash scripts/generate.sh
           grep -q '^\[Interface\]$' warp-amnezia.conf
           grep -q '^PrivateKey = ' warp-amnezia.conf
           grep -q '^\[Peer\]$' warp-amnezia.conf
