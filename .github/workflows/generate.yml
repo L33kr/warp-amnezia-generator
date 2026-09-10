@@ -20,6 +20,20 @@ on:
           - cloudflare
           - quad9
           - google
+      endpoint_ip:
+        description: WARP endpoint IPv4
+        required: true
+        default: '162.159.192.1'
+      endpoint_port:
+        description: WARP UDP port
+        type: choice
+        required: true
+        default: '2408'
+        options:
+          - '2408'
+          - '500'
+          - '1701'
+          - '4500'
       mtu:
         description: MTU
         required: true
@@ -43,6 +57,8 @@ jobs:
         env:
           WARP_MTU: ${{ inputs.mtu }}
           WARP_KEEPALIVE: ${{ inputs.keepalive }}
+          WARP_ENDPOINT_IP: ${{ inputs.endpoint_ip }}
+          WARP_ENDPOINT_PORT: ${{ inputs.endpoint_port }}
         run: |
           case "${{ inputs.dns }}" in
             quad9) export WARP_DNS='9.9.9.9, 149.112.112.112' ;;
@@ -76,5 +92,8 @@ jobs:
             echo 'Скачай **warp-amnezia-config** в разделе Artifacts этого запуска.'
             echo 'Внутри находится `warp-amnezia.conf` для импорта в AmneziaVPN как WireGuard.'
             echo ''
+            echo "Endpoint: `${{ inputs.endpoint_ip }}:${{ inputs.endpoint_port }}`"
+            echo ''
+            echo '> Если 2408 не подключается, попробуй 500, 1701 или 4500.'
             echo '> Не публикуй файл конфигурации: он содержит приватный ключ.'
           } >> "$GITHUB_STEP_SUMMARY"
