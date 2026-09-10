@@ -14,33 +14,22 @@
 
 Приватный ключ не отправляется в Deno и не коммитится в GitHub.
 
-## Бесплатный деплой на Deno Deploy
+## Deno Deploy
 
-Deno Deploy Free подходит для этого проекта с большим запасом: на бесплатном тарифе доступны до 1 млн HTTP-запросов в месяц и 20 GiB egress.
+Deno Deploy должен запускать серверный entrypoint `app.js` или `main.ts`.
 
-1. Открой `https://console.deno.com` и войди через GitHub.
-2. Создай organization, если Deno попросит.
-3. Создай новое приложение и выбери **Deploy from GitHub**.
-4. Выбери репозиторий `L33kr/warp-amnezia-generator`.
-5. Runtime mode: **Dynamic**.
-6. Entrypoint: **`main.ts`**.
-7. Production branch: **`main`**.
-8. Region можно оставить **Global**.
-9. Нажми Deploy.
+- `app.js` — серверный bootstrap, импортирует `main.ts`.
+- `main.ts` — HTTP server + `/api/register`.
+- `client.js` — браузерный код интерфейса.
+- `index.html` — интерфейс.
 
-После публикации Deno выдаст домен приложения. Открой его — генератор будет работать полностью на нём.
-
-### CLI-вариант
-
-Если используешь Deno CLI, приложение можно создать через `deno deploy create` с GitHub source, dynamic runtime и entrypoint `main.ts`.
+Такое разделение важно: браузерный код использует `document`, которого нет в серверном runtime Deno.
 
 ## Локальный запуск
 
 ```bash
 deno task dev
 ```
-
-Открой `http://localhost:8000`.
 
 Проверка backend:
 
@@ -61,16 +50,6 @@ Workflow `Generate WARP config` оставлен как резервный ва�
 ## Безопасность
 
 Не публикуй сгенерированный `.conf`: в нём находится приватный WireGuard-ключ.
-
-## Структура
-
-- `main.ts` — Deno HTTP server + `/api/register`.
-- `index.html` — интерфейс.
-- `app.js` — локальная генерация ключей, вызов API и сборка `.conf`.
-- `wireguard.js` — X25519/WireGuard key generation.
-- `deno.json` — локальные Deno tasks.
-- `.github/workflows/generate.yml` — резервный Actions-генератор.
-- `worker/` — старый альтернативный вариант через Cloudflare Worker; для Deno Deploy не требуется.
 
 ## Лицензия
 
