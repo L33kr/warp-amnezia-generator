@@ -4,41 +4,51 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <meta name="description" content="Генератор Cloudflare WARP WireGuard-конфигураций для AmneziaVPN." />
-  <title>WARP → AmneziaVPN</title>
+  <meta name="description" content="Генератор Cloudflare WARP MASQUE и WireGuard профилей." />
+  <title>WARP Config Generator</title>
   <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f3f4f6;background:#0b0d10}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b0d10}button,input,select,textarea{font:inherit}.shell{width:min(760px,calc(100% - 32px));margin:0 auto;padding:56px 0}.hero{margin-bottom:24px}h1{margin:0 0 8px;font-size:clamp(30px,6vw,44px);line-height:1.05;letter-spacing:-.035em}h2{margin:0;font-size:18px}.hero p{margin:0;color:#9ca3af;font-size:16px;line-height:1.5}.client-note{margin:16px 0 4px;color:#9ca3af;font-size:13px;line-height:1.5}.client-note strong{color:#e5e7eb}.client-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.client-links a{display:inline-flex;align-items:center;text-decoration:none;color:#cbd5e1;border:1px solid #2a2f38;background:#0d1014;border-radius:9px;padding:8px 10px;font-size:12.5px;font-weight:600}.client-links a:hover{background:#171b21;color:#fff}.client-links .all{color:#a5b4fc;border-color:#3730a3}.card{margin-top:14px;padding:20px;border:1px solid #23272f;border-radius:14px;background:#111419}.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}label{display:grid;gap:7px;color:#cbd5e1;font-size:13px;font-weight:600}input,select,textarea{width:100%;border:1px solid #2a2f38;background:#0d1014;color:#f8fafc;border-radius:10px;padding:11px 12px;outline:none}input:focus,select:focus,textarea:focus{border-color:#64748b}textarea{resize:vertical;font-family:"Cascadia Code","SFMono-Regular",Consolas,monospace;font-size:12.5px;line-height:1.5}details{margin:18px 0;padding-top:16px;border-top:1px solid #23272f}summary{cursor:pointer;color:#cbd5e1;font-size:13px;font-weight:600}.details-grid{margin-top:14px}button{border:1px solid #303641;background:#181c22;color:#f3f4f6;border-radius:10px;padding:11px 14px;cursor:pointer;font-weight:700}button:hover{background:#20252d}button:disabled{opacity:.55;cursor:wait}.primary{border-color:#4f46e5;background:#4f46e5;color:#fff}.primary:hover{background:#4338ca}.danger{color:#fca5a5;border-color:#4b252b;background:#1b1114}#generateBtn{width:100%;padding:12px 16px}.status,.error{margin-top:12px;padding:11px 12px;border-radius:10px;font-size:13px;line-height:1.45}.status{background:#0f1714;border:1px solid #244235;color:#bbf7d0}.error{background:#1a1013;border:1px solid #4b252b;color:#fecaca;white-space:pre-wrap}.result-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.pill{padding:5px 8px;border:1px solid #2f3540;border-radius:999px;color:#aeb7c5;font-size:12px;font-weight:700}.meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}.meta-grid>div{min-width:0;padding:10px 11px;border:1px solid #23272f;border-radius:10px;background:#0d1014}.meta-grid span{display:block;margin-bottom:4px;color:#737d8c;font-size:11px}.meta-grid strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}.actions{display:flex;gap:10px;margin-top:12px}.actions button{flex:1}.hidden{display:none!important}@media(max-width:640px){.shell{padding:32px 0}.grid.two,.meta-grid{grid-template-columns:1fr}.actions{flex-direction:column}}
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f3f4f6;background:#0b0d10}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#0b0d10}button,input,select,textarea{font:inherit}.shell{width:min(760px,calc(100% - 32px));margin:0 auto;padding:52px 0}.hero{margin-bottom:22px}h1{margin:0 0 8px;font-size:clamp(30px,6vw,44px);line-height:1.05;letter-spacing:-.035em}h2{margin:0;font-size:18px}.hero>p{margin:0;color:#9ca3af;font-size:16px;line-height:1.5}.client-note{margin-top:14px;color:#9ca3af;font-size:13px;line-height:1.5}.client-note strong{color:#e5e7eb}.client-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.client-links a{display:inline-flex;align-items:center;text-decoration:none;color:#cbd5e1;border:1px solid #2a2f38;background:#0d1014;border-radius:9px;padding:8px 10px;font-size:12.5px;font-weight:600}.client-links a:hover{background:#171b21;color:#fff}.card{margin-top:14px;padding:20px;border:1px solid #23272f;border-radius:14px;background:#111419}.grid{display:grid;gap:14px}.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}label{display:grid;gap:7px;color:#cbd5e1;font-size:13px;font-weight:600}input,select,textarea{width:100%;border:1px solid #2a2f38;background:#0d1014;color:#f8fafc;border-radius:10px;padding:11px 12px;outline:none}input:focus,select:focus,textarea:focus{border-color:#64748b}textarea{resize:vertical;font-family:"Cascadia Code","SFMono-Regular",Consolas,monospace;font-size:12.5px;line-height:1.5}details{margin:18px 0;padding-top:16px;border-top:1px solid #23272f}summary{cursor:pointer;color:#cbd5e1;font-size:13px;font-weight:600}.details-grid{margin-top:14px}button{border:1px solid #303641;background:#181c22;color:#f3f4f6;border-radius:10px;padding:11px 14px;cursor:pointer;font-weight:700}button:hover{background:#20252d}button:disabled{opacity:.55;cursor:wait}.primary{border-color:#4f46e5;background:#4f46e5;color:#fff}.primary:hover{background:#4338ca}.danger{color:#fca5a5;border-color:#4b252b;background:#1b1114}#generateBtn{width:100%;padding:12px 16px}.status,.error,.result-help{margin-top:12px;padding:11px 12px;border-radius:10px;font-size:13px;line-height:1.45}.status{background:#0f1714;border:1px solid #244235;color:#bbf7d0}.error{background:#1a1013;border:1px solid #4b252b;color:#fecaca;white-space:pre-wrap}.result-help{background:#0d1014;border:1px solid #23272f;color:#9ca3af}.result-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.pill{padding:5px 8px;border:1px solid #2f3540;border-radius:999px;color:#aeb7c5;font-size:12px;font-weight:700}.meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}.meta-grid>div{min-width:0;padding:10px 11px;border:1px solid #23272f;border-radius:10px;background:#0d1014}.meta-grid span{display:block;margin-bottom:4px;color:#737d8c;font-size:11px}.meta-grid strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px}.actions{display:flex;gap:10px;margin-top:12px}.actions button{flex:1}.hidden{display:none!important}.hint{margin:8px 0 0;color:#737d8c;font-size:12px;line-height:1.45}@media(max-width:640px){.shell{padding:32px 0}.grid.two,.meta-grid{grid-template-columns:1fr}.actions{flex-direction:column}}
   </style>
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <h1>WARP → AmneziaVPN</h1>
-      <p>Генератор WireGuard-профиля Cloudflare WARP для AmneziaVPN.</p>
+      <h1>WARP Config Generator</h1>
+      <p>MASQUE и WireGuard профили Cloudflare WARP.</p>
 
-      <div class="client-note">
-        <strong>Для подключения нужен клиент AmneziaVPN.</strong>
+      <div id="masqueClients" class="client-note">
+        <strong>MASQUE:</strong> для Android — LxBox, для Windows/macOS — Sing-Box Launcher.
         <div class="client-links">
-          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">Windows</a>
-          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">macOS</a>
-          <a href="https://github.com/amnezia-vpn/amnezia-client/releases/latest" target="_blank" rel="noopener">Linux</a>
-          <a href="https://play.google.com/store/apps/details?id=org.amnezia.vpn" target="_blank" rel="noopener">Android</a>
-          <a href="https://apps.apple.com/us/app/amneziavpn/id1600529900" target="_blank" rel="noopener">iPhone / iPad</a>
-          <a class="all" href="https://amnezia.org/ru/downloads" target="_blank" rel="noopener">Все варианты</a>
+          <a href="https://github.com/Leadaxe/LxBox/releases/latest" target="_blank" rel="noopener">LxBox · Android</a>
+          <a href="https://github.com/Leadaxe/singbox-launcher/releases/latest" target="_blank" rel="noopener">Sing-Box Launcher · Desktop</a>
+        </div>
+      </div>
+
+      <div id="wireguardClients" class="client-note hidden">
+        <strong>WireGuard:</strong> импортируется в AmneziaVPN.
+        <div class="client-links">
+          <a href="https://amnezia.org/ru/downloads" target="_blank" rel="noopener">Скачать AmneziaVPN</a>
         </div>
       </div>
     </header>
 
     <section class="card">
       <div class="grid two">
-        <label>Режим маршрутизации
+        <label>Протокол
+          <select id="protocol">
+            <option value="masque" selected>MASQUE — рекомендуется</option>
+            <option value="wireguard">WireGuard — резервный</option>
+          </select>
+        </label>
+
+        <label>Адреса туннеля
           <select id="routeMode">
             <option value="full">IPv4 + IPv6</option>
             <option value="ipv4">Только IPv4</option>
           </select>
         </label>
 
-        <label>DNS
+        <label id="dnsField" class="hidden">DNS
           <select id="dnsPreset">
             <option value="1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001">Cloudflare</option>
             <option value="83.220.169.155, 212.109.195.93">Comss.one</option>
@@ -47,11 +57,20 @@
             <option value="8.8.8.8, 8.8.4.4">Google</option>
           </select>
         </label>
+
+        <label id="masqueOptions">MASQUE transport
+          <select id="masqueTransport">
+            <option value="auto" selected>Auto — H3 → H2</option>
+            <option value="h3">HTTP/3 · QUIC</option>
+            <option value="h2">HTTP/2 · TCP</option>
+          </select>
+        </label>
       </div>
 
       <details>
         <summary>Дополнительные настройки</summary>
-        <div class="grid two details-grid">
+
+        <div id="wireguardOptions" class="grid two details-grid hidden">
           <label>Endpoint IP<input id="endpointIp" value="162.159.192.1" /></label>
           <label>UDP порт
             <select id="warpPort">
@@ -64,16 +83,23 @@
           <label>MTU<input id="mtu" type="number" min="576" max="1500" value="1280" /></label>
           <label>Keepalive<input id="keepalive" type="number" min="0" max="3600" value="25" /></label>
         </div>
+
+        <div id="masqueAdvanced" class="grid two details-grid">
+          <label>MASQUE Endpoint<input id="masqueEndpoint" value="162.159.198.2" /></label>
+          <label>Порт<input id="masquePort" type="number" min="1" max="65535" value="443" /></label>
+          <label>SNI<input id="masqueSni" value="www.microsoft.com" /></label>
+          <label>MTU<input id="masqueMtu" type="number" min="576" max="16000" value="1280" /></label>
+        </div>
       </details>
 
-      <button id="generateBtn" class="primary">Создать конфиг</button>
+      <button id="generateBtn" class="primary">Создать MASQUE</button>
       <div id="status" class="status hidden" role="status"></div>
       <div id="error" class="error hidden" role="alert"></div>
     </section>
 
     <section id="result" class="card hidden">
       <div class="result-head">
-        <h2>warp-amnezia.conf</h2>
+        <h2 id="resultTitle">WARP</h2>
         <div class="pill" id="accountType">WARP</div>
       </div>
 
@@ -81,20 +107,23 @@
         <div><span>IPv4</span><strong id="ipv4">—</strong></div>
         <div><span>IPv6</span><strong id="ipv6">—</strong></div>
         <div><span>Endpoint</span><strong id="endpoint">—</strong></div>
-        <div><span>Device ID</span><strong id="deviceId">—</strong></div>
+        <div><span>Transport</span><strong id="transport">—</strong></div>
       </div>
 
-      <textarea id="config" rows="13" spellcheck="false" readonly></textarea>
+      <textarea id="config" rows="10" spellcheck="false" readonly></textarea>
 
       <div class="actions">
-        <button id="downloadBtn" class="primary">Скачать .conf</button>
+        <button id="downloadBtn" class="primary">Скачать</button>
         <button id="copyBtn">Копировать</button>
         <button id="clearBtn" class="danger">Очистить</button>
       </div>
+
+      <div id="masqueResultHelp" class="result-help hidden">Скопированную <code>masque://</code> ссылку можно добавить в LxBox или Sing-Box Launcher. JSON содержит тот же MASQUE outbound.</div>
+      <div id="wireguardResultHelp" class="result-help hidden">Импортируй <code>warp-amnezia.conf</code> в AmneziaVPN как обычный WireGuard-профиль.</div>
     </section>
   </main>
 
-  <script src="/wireguard.js?v=20260910-minimal3"></script>
-  <script src="/client.js?v=20260910-minimal3"></script>
+  <script src="/wireguard.js?v=20260913-masque1"></script>
+  <script src="/client.js?v=20260913-masque1"></script>
 </body>
 </html>
