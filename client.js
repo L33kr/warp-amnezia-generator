@@ -206,32 +206,19 @@
     const query = new URLSearchParams();
     query.set('publickey', warp.peerPublicKeyDer);
     query.set('address', addresses.join(','));
+    query.set('profile', 'cloudflare');
     query.set('vhttp', opts.transport);
     query.set('sni', opts.sni);
     query.set('mtu', String(opts.mtu));
 
     const endpoint = `${opts.endpoint}:${opts.port}`;
     const uri = `masque://${encodeURIComponent(privateKey)}@${endpoint}?${query.toString()}#WARP%20MASQUE`;
-    const outbound = {
-      type: 'masque',
-      tag: 'warp-masque',
-      server: opts.endpoint,
-      server_port: opts.port,
-      profile: 'cloudflare',
-      vhttp: opts.transport,
-      tls: { server_name: opts.sni },
-      private_key: privateKey,
-      public_key: warp.peerPublicKeyDer,
-      ip: `${warp.ipv4}/32`,
-      ...(opts.includeIpv6 && warp.ipv6 ? { ipv6: `${warp.ipv6}/128` } : {}),
-      mtu: opts.mtu
-    };
 
     return {
       copyText: uri,
-      downloadText: `${JSON.stringify(outbound, null, 2)}\n`,
-      filename: 'warp-masque.json',
-      mime: 'application/json;charset=utf-8',
+      downloadText: `${uri}\n`,
+      filename: 'warp-masque.txt',
+      mime: 'text/plain;charset=utf-8',
       endpoint,
       transport: opts.transport === 'auto' ? 'MASQUE Auto (H3 → H2)' : `MASQUE ${opts.transport.toUpperCase()}`
     };
@@ -259,8 +246,11 @@
     $('endpoint').textContent = built.endpoint;
     $('transport').textContent = built.transport;
     $('accountType').textContent = protocol === 'masque' ? 'MASQUE' : (warp.warpPlus ? 'WARP+' : 'WARP Free');
-    $('downloadBtn').textContent = protocol === 'masque' ? 'Скачать JSON' : 'Скачать .conf';
+    $('downloadBtn').textContent = protocol === 'masque' ? 'Скачать ссылку' : 'Скачать .conf';
     $('copyBtn').textContent = protocol === 'masque' ? 'Копировать ссылку' : 'Копировать';
+    if (protocol === 'masque') {
+      $('masqueResultHelp').innerHTML = 'В Sing-Box Launcher добавь эту <code>masque://</code> ссылку через <strong>Wizard → Sources</strong>. Не заменяй ею <code>bin/config.json</code>: это ссылка на один MASQUE-узел, а не полный sing-box конфиг.';
+    }
     toggle('masqueResultHelp', protocol === 'masque');
     toggle('wireguardResultHelp', protocol !== 'masque');
     result.classList.remove('hidden');
